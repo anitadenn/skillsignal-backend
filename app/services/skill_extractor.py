@@ -34,17 +34,22 @@ def extract_skills(resume_text: str, github_data: dict):
     skill_map = {}
 
     for skill in skill_keywords:
-        score = 0
+        resume_found = resume_skills.get(skill, False)
+        github_value = github_skills.get(skill, 0)
 
         # Resume weight
-        if resume_skills.get(skill):
-            score += 40
+        resume_score = 40 if resume_found else 0
 
-        # GitHub weight
-        github_value = github_skills.get(skill, 0)
+        # GitHub weight (normalized)
         github_score = int((github_value / max_github) * 60) if github_value else 0
-        score += github_score
 
-        skill_map[skill] = min(score, 100)
+        total_score = min(resume_score + github_score, 100)
+
+        skill_map[skill] = {
+            "score": total_score,
+            "resume": resume_found,
+            "github": github_value
+        }
+
 
     return skill_map
